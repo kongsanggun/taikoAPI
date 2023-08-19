@@ -28,8 +28,8 @@ export class CompetitionService {
     const id = param.id;
     const cookie = param.cookie;
 
-    if (!Array.isArray(id) || id.length === 0) {
-      throw new ServiceUnavailableException('올바른 번호 형식이 아닙니다.');
+    if (id.length === 0) {
+      throw new ServiceUnavailableException('요청하신 대회 번호가 없습니다.');
     }
 
     for (let index = 0; index < id.length; index++) {
