@@ -1,4 +1,8 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  ServiceUnavailableException,
+} from '@nestjs/common';
 import getPage from 'src/common/utils/getPage';
 import envConfig from 'src/common/config/envConfig';
 import { ConfigType } from '@nestjs/config';
@@ -24,14 +28,22 @@ export class CompetitionService {
     const id = param.id;
     const cookie = param.cookie;
 
+    if (!Array.isArray(id) || id.length === 0) {
+      throw new ServiceUnavailableException('올바른 번호 형식이 아닙니다.');
+    }
+
     for (let index = 0; index < id.length; index++) {
       const url = `https://donderhiroba.jp/compe_ranking.php?compeid=${id[index]}`;
       const $ = await getPage(url, cookie);
-      const pageHTML = $(`#mater`)
-        .html()
-        .trim()
-        .split('festivalRankThumbList clearfix');
 
+      const mater = $(`#mater`).html();
+      if (this.checkmaterExist(mater)) {
+        throw new ServiceUnavailableException(
+          '요청하신 대회 번호가 나오지 않았습니다.',
+        );
+      }
+
+      const pageHTML = mater.trim().split('festivalRankThumbList clearfix');
       pageHTML.shift();
 
       pageHTML.forEach((item) => {
@@ -40,6 +52,10 @@ export class CompetitionService {
     }
 
     return result;
+  }
+
+  private checkmaterExist(mater: string): boolean {
+    return mater === null || mater === undefined;
   }
 
   private getEntryInfo(param: string): object {

@@ -15,10 +15,10 @@ export class CrawlingService {
   ) {}
 
   public async checkId(param: any): Promise<object> {
-    const isUserExist = await this.getUserPage(param)['isUserExist'];
+    const isUserExist = await this.getUserPage(param);
 
     return {
-      isUserExist: isUserExist,
+      isUserExist: isUserExist['isUserExist'],
       cookie: param.cookie,
     };
   }
