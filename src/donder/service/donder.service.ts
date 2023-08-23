@@ -138,7 +138,13 @@ export class CrawlingService {
       });
     }
 
-    return result.filter(() => true);
+    return result
+      .filter(() => true)
+      .filter((value) => {
+        const isCrown = value.crown !== 'none';
+        const isPatch = value.patch !== 'none';
+        return isCrown || isPatch;
+      });
   }
 
   private getSongInfo(param: string): object {
@@ -160,6 +166,62 @@ export class CrawlingService {
       crown: crown,
       patch: patch,
       isUra: isUra,
+    };
+  }
+
+  public async getInfoDetail(param: any): Promise<object> {
+    const info = await this.getInfo(param); // 전체 기록
+    const songInfo = [];
+
+    for (let index = 0; index < info['songInfo'].length; index++) {
+      const value = info['songInfo'][index];
+      const level = value.isUra ? 5 : 4;
+      const songNo = value.songId;
+      const url = `https://donderhiroba.jp/score_detail.php?song_no=${songNo}&level=${level}&taiko_no=${param.id}`;
+
+      const $ = await getPage(url, param.cookie);
+      const highScore = Number(
+        $(`#content > div.scoreDetail > div.scoreDetailTable > div.high_score`)
+          .html()
+          .split('<span>')[1]
+          .split('点</span>')[0],
+      );
+      const good = Number(
+        $(`#content > div.scoreDetail > div.scoreDetailTable > div.good_cnt`)
+          .html()
+          .split('<span>')[1]
+          .split('回</span>')[0],
+      );
+      const ok = Number(
+        $(`#content > div.scoreDetail > div.scoreDetailTable > div.ok_cnt`)
+          .html()
+          .split('<span>')[1]
+          .split('回</span>')[0],
+      );
+      const ng = Number(
+        $(`#content > div.scoreDetail > div.scoreDetailTable > div.ng_cnt`)
+          .html()
+          .split('<span>')[1]
+          .split('回</span>')[0],
+      );
+
+      songInfo.push({
+        songId: value.songId,
+        name: value.name,
+        crown: value.crown,
+        patch: value.patch,
+        isUra: value.isUra,
+        highScore: highScore,
+        good: good,
+        ok: ok,
+        ng: ng,
+      });
+    }
+
+    return await {
+      userInfo: info['userInfo'],
+      songInfo: songInfo,
+      cookie: param.cookie,
     };
   }
 }

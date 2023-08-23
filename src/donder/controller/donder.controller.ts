@@ -23,4 +23,12 @@ export class DonderController {
   async getInfo(@Body() dto: DonderBodyDto): Promise<object> {
     return await this.crawlingService.getInfo(dto);
   }
+
+  /*
+    태고 유저의 전체 기록을 불러옵니다.
+  */
+  @Post('detail')
+  async getDetail(@Body() dto: DonderBodyDto): Promise<object> {
+    return await this.crawlingService.getInfoDetail(dto);
+  }
 }
